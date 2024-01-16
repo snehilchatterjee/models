@@ -68,7 +68,7 @@ class FeedForwardBlock(nn.Module):
         return self.linear_2(self.dropout(self.linear_1(x)))
 
 
-class MultiHeadAttention(nn.Module):
+class MultiHeadAttentionBlock(nn.Module):
 
     def __init__(self,d_model: int,h: int,dropout: float):
         super().__init__()
@@ -108,10 +108,20 @@ class MultiHeadAttention(nn.Module):
         key=query.view(query.shape[0],query.shape[1],self.h,self.d_k).transpose(1,2)
         value=query.view(query.shape[0],query.shape[1],self.h,self.d_k).transpose(1,2)
 
-        x, self.attention_scores=MultiHeadAttention.attention(query, key, value, mask, self.dropout)
+        x, self.attention_scores=MultiHeadAttentionBlock.attention(query, key, value, mask, self.dropout)
 
         # (Batch, h, seq_len, d_k) --> (Batch, seq_len, h, d_k) --> (Batch, seq_len, d_model)
         x=x.transpose(1,2).contiguous().view(x.shape[0],-1,self.h*self.d_k)
 
         # (Batch, seq_len, d_model) --> (Batch, seq_len, d_model)
         return self.w_o(x)
+
+class ResidualConnection(nn.Module):
+    def __init__(self, dropout: float):
+        super().__init__()
+        self.dropout=nn.Dropout(dropout)
+        self.norm=LayerNormalization()
+
+    def forward(self,x,sublayer):
+        return x+self.dropout(sublayer(self.norm(x)))
+
