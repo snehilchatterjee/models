@@ -97,3 +97,4 @@ class UNet(nn.Module):
         self.op24=(self.upconv6(self.op23)) # torch.Size([32, 32, 256, 256])
         self.op25=(self.last_layer(self.op24)) # torch.Size([32, 2, 256, 256])
         
+	return self.op25
